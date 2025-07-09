@@ -10,10 +10,10 @@ import javax.swing.JPanel;
 public class SimpleCanvas {
 
     public enum DrawingMode {
-        PEN, ERASER
+        PEN, ERASER, NONE
     }
 
-    private static DrawingMode currentMode = DrawingMode.PEN;
+    private static DrawingMode currentMode = DrawingMode.NONE;
 
     public static void main(String[] args) {
         JFrame frame = new JFrame();
@@ -28,8 +28,10 @@ public class SimpleCanvas {
 
         JButton penButton = new JButton("Pen");
         JButton eraserButton = new JButton("Eraser");
+        JButton clearButton = new JButton("Clear");
         buttonPanel.add(penButton);
         buttonPanel.add(eraserButton);
+        buttonPanel.add(clearButton);
 
         frame.add(buttonPanel, BorderLayout.NORTH);
 
@@ -38,7 +40,7 @@ public class SimpleCanvas {
 
         frame.setVisible(true);
 
-        penButton.setEnabled(false);
+        penButton.setEnabled(true);
         eraserButton.setEnabled(true);
 
         penButton.addActionListener(e -> {
@@ -53,6 +55,12 @@ public class SimpleCanvas {
             eraserButton.setEnabled(false);
             penButton.setEnabled(true);
             drawingCanvas.setDrawingMode(currentMode);
+        });
+
+        clearButton.addActionListener(e -> {
+            eraserButton.setEnabled(true);
+            penButton.setEnabled(true);
+            drawingCanvas.clearDrawing();
         });
     }
 }
