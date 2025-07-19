@@ -4,8 +4,6 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
 
-import SimpleCanvas.SimpleCanvas.DrawingMode;
-
 public class DrawingStroke {
     
     private List<Point> points;

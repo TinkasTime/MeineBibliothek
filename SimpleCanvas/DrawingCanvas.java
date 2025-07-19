@@ -1,18 +1,15 @@
 package SimpleCanvas;
 
 import javax.swing.JPanel;
-
-import SimpleCanvas.SimpleCanvas.DrawingMode;
-
-import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseAdapter;
 import java.util.ArrayList;
 import java.util.List;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Graphics2D;
 
 class DrawingCanvas extends JPanel {
 
@@ -21,24 +18,71 @@ class DrawingCanvas extends JPanel {
     private static final Color BACKGROUND_COLOR = Color.WHITE;
 
     private List<DrawingStroke> drawingStrokes = new ArrayList<>();
-    private DrawingStroke currenStroke = null;
+    private DrawingStroke currentStroke = null;
 
     private Point lastPoint = null;
     private DrawingMode currentCanvasMode = DrawingMode.NONE;
 
+    private Runnable undoButtonCallback;
+
     public DrawingCanvas() {
         setDrawingMode(currentCanvasMode);
 
-        addMouseListener(new DrawingMouseListener());
-        addMouseMotionListener(new DrawingMouseMotionListener());
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if (currentCanvasMode == DrawingMode.PEN || currentCanvasMode == DrawingMode.ERASER) {
+                    lastPoint = e.getPoint();
+                    currentStroke = new DrawingStroke(currentCanvasMode);
+                    currentStroke.addPoint(lastPoint);
+                    drawingStrokes.add(currentStroke);
+                    repaint();
+                    if (undoButtonCallback != null) {
+                        undoButtonCallback.run();
+                    }
+                }
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (currentCanvasMode == DrawingMode.PEN || currentCanvasMode == DrawingMode.ERASER) {
+                    lastPoint = null;
+                    currentStroke = null;
+                }
+            }
+        });
+
+        addMouseMotionListener(new MouseAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                if ((currentCanvasMode == DrawingMode.PEN || currentCanvasMode == DrawingMode.ERASER) && lastPoint != null && currentStroke != null) {
+                    Point currentPoint = e.getPoint();
+                    currentStroke.addPoint(currentPoint);
+
+                    Graphics g = getGraphics();
+                    if (g != null) {
+                        if (currentCanvasMode == DrawingMode.PEN) {
+                            g.setColor(DRAW_COLOR);
+                        } else {
+                            g.setColor(ERASE_COLOR);
+                        }
+                        g.drawLine(lastPoint.x, lastPoint.y, currentPoint.x, currentPoint.y);
+                        g.dispose();
+                    }
+                    lastPoint = currentPoint;
+                }
+            }
+        });
+    }
+
+    public void setUndoButtonCallback (Runnable callback) {
+        this.undoButtonCallback = callback;
     }
 
     public void setDrawingMode(DrawingMode mode) {
         this.currentCanvasMode = mode;
-        if (mode == DrawingMode.PEN) {
+        if (mode == DrawingMode.PEN || mode == DrawingMode.ERASER) {
             setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
-        } else if (mode == DrawingMode.ERASER) {
-            setCursor(new Cursor(Cursor.HAND_CURSOR));
         } else {
             setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         }
@@ -47,6 +91,23 @@ class DrawingCanvas extends JPanel {
     public void clearDrawing() {
         drawingStrokes.clear();
         repaint();
+        if (undoButtonCallback != null) {
+            undoButtonCallback.run();
+        }
+    }
+
+    public void undoLastStroke() {
+        if (!drawingStrokes.isEmpty()) {
+            drawingStrokes.remove(drawingStrokes.size()-1);
+            repaint();
+            if (undoButtonCallback != null) {
+                undoButtonCallback.run();
+            }
+        }
+    }
+
+    public boolean hasStrokes() {
+        return !drawingStrokes.isEmpty();
     }
 
     @Override
@@ -70,7 +131,7 @@ class DrawingCanvas extends JPanel {
                 for (int i = 0; i < points.size()-1; i++) {
                     Point p1 = points.get(i);
                     Point p2 = points.get(i+1);
-                    g.drawLine(p1.x, p1.y, p2.x, p2.y);
+                    g2d.drawLine(p1.x, p1.y, p2.x, p2.y);
                 }
             } else if (points.size() == 1) {
                 Point p = points.get(0);
@@ -78,48 +139,4 @@ class DrawingCanvas extends JPanel {
             }
         }
     }
-
-    private class DrawingMouseListener extends MouseAdapter {
-        @Override
-        public void mousePressed(MouseEvent e) {
-            if (currentCanvasMode == DrawingMode.PEN || currentCanvasMode == DrawingMode.ERASER) {
-                lastPoint = e.getPoint();
-                currenStroke = new DrawingStroke(currentCanvasMode);
-                currenStroke.addPoint(lastPoint);
-                drawingStrokes.add(currenStroke);
-                repaint();
-            }
-        }
-
-        @Override
-        public void mouseReleased(MouseEvent e) {
-            if (currentCanvasMode == DrawingMode.PEN || currentCanvasMode == DrawingMode.ERASER) {
-                lastPoint = null;
-                currenStroke = null;
-            }
-        }
-    }
-
-    private class DrawingMouseMotionListener extends MouseAdapter {
-        @Override
-        public void mouseDragged(MouseEvent e) {
-            if ((currentCanvasMode == DrawingMode.PEN || currentCanvasMode == DrawingMode.ERASER) && lastPoint != null && currenStroke != null) {
-                Point currentPoint = e.getPoint();
-                currenStroke.addPoint(currentPoint);
-
-                Graphics g = getGraphics();
-                if (g != null) {
-                    if (currentCanvasMode == DrawingMode.PEN) {
-                        g.setColor(DRAW_COLOR);
-                    } else {
-                        g.setColor(ERASE_COLOR);
-                    }
-                    g.drawLine(lastPoint.x, lastPoint.y, currentPoint.x, currentPoint.y);
-                    g.dispose();
-                }
-                lastPoint = currentPoint;
-            }
-        }
-    }
-
 }
