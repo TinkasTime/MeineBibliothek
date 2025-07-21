@@ -1,17 +1,18 @@
 package SimpleCanvas;
 
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
 
 public class SimpleCanvas {
 
     private static DrawingMode currentMode = DrawingMode.NONE;
 
     private static JButton undoButton;
-    private static DrawingCanvas drawingCanvas;
+    private static CanvasPanel drawingCanvas;
 
     public static void main(String[] args) {
         JFrame frame = new JFrame();
@@ -35,7 +36,7 @@ public class SimpleCanvas {
 
         frame.add(buttonPanel, BorderLayout.NORTH);
 
-        drawingCanvas = new DrawingCanvas();
+        drawingCanvas = new CanvasPanel();
         drawingCanvas.setUndoButtonCallback(() -> updateUndoButtonState());
         frame.add(drawingCanvas, BorderLayout.CENTER);
 

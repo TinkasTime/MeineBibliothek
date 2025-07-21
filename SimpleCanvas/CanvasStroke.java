@@ -4,12 +4,12 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DrawingStroke {
+public class CanvasStroke {
     
     private List<Point> points;
     private DrawingMode mode;
 
-    public DrawingStroke(DrawingMode mode) {
+    public CanvasStroke(DrawingMode mode) {
         this.mode = mode;
         this.points = new ArrayList<>();
     }

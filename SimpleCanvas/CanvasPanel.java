@@ -1,31 +1,32 @@
 package SimpleCanvas;
 
-import javax.swing.JPanel;
-import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseAdapter;
-import java.util.ArrayList;
-import java.util.List;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
 
-class DrawingCanvas extends JPanel {
+import javax.swing.JPanel;
+
+class CanvasPanel extends JPanel {
 
     private static final Color DRAW_COLOR = Color.BLACK;
     private static final Color ERASE_COLOR = Color.WHITE;
     private static final Color BACKGROUND_COLOR = Color.WHITE;
 
-    private List<DrawingStroke> drawingStrokes = new ArrayList<>();
-    private DrawingStroke currentStroke = null;
+    private List<CanvasStroke> drawingStrokes = new ArrayList<>();
+    private CanvasStroke currentStroke = null;
 
     private Point lastPoint = null;
     private DrawingMode currentCanvasMode = DrawingMode.NONE;
 
     private Runnable undoButtonCallback;
 
-    public DrawingCanvas() {
+    public CanvasPanel() {
         setDrawingMode(currentCanvasMode);
 
         addMouseListener(new MouseAdapter() {
@@ -33,7 +34,7 @@ class DrawingCanvas extends JPanel {
             public void mousePressed(MouseEvent e) {
                 if (currentCanvasMode == DrawingMode.PEN || currentCanvasMode == DrawingMode.ERASER) {
                     lastPoint = e.getPoint();
-                    currentStroke = new DrawingStroke(currentCanvasMode);
+                    currentStroke = new CanvasStroke(currentCanvasMode);
                     currentStroke.addPoint(lastPoint);
                     drawingStrokes.add(currentStroke);
                     repaint();
@@ -119,7 +120,7 @@ class DrawingCanvas extends JPanel {
 
         Graphics2D g2d = (Graphics2D) g;
 
-        for (DrawingStroke stroke : drawingStrokes) {
+        for (CanvasStroke stroke : drawingStrokes) {
             if (stroke.getMode() == DrawingMode.PEN) {
                 g2d.setColor(DRAW_COLOR);
             } else {
