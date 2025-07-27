@@ -12,7 +12,7 @@ public class SimpleCanvas {
     private static DrawingMode currentMode = DrawingMode.NONE;
 
     private static JButton undoButton;
-    private static CanvasPanel drawingCanvas;
+    private static CanvasPanel canvasPanel;
 
     public static void main(String[] args) {
         JFrame frame = new JFrame();
@@ -36,49 +36,49 @@ public class SimpleCanvas {
 
         frame.add(buttonPanel, BorderLayout.NORTH);
 
-        drawingCanvas = new CanvasPanel();
-        drawingCanvas.setUndoButtonCallback(() -> updateUndoButtonState());
-        frame.add(drawingCanvas, BorderLayout.CENTER);
+        canvasPanel = new CanvasPanel();
+        canvasPanel.setUndoButtonCallback(() -> updateUndoButtonState());
+        frame.add(canvasPanel, BorderLayout.CENTER);
 
         frame.setVisible(true);
 
         penButton.setEnabled(true);
         eraserButton.setEnabled(true);
         updateUndoButtonState();
-        drawingCanvas.setDrawingMode(currentMode);
+        canvasPanel.setDrawingMode(currentMode);
 
         penButton.addActionListener(e -> {
             penButton.setEnabled(false);
             eraserButton.setEnabled(true);
             currentMode = DrawingMode.PEN;
-            drawingCanvas.setDrawingMode(currentMode);
+            canvasPanel.setDrawingMode(currentMode);
         });
 
         eraserButton.addActionListener(e -> {
             penButton.setEnabled(true);
             eraserButton.setEnabled(false);
             currentMode = DrawingMode.ERASER;
-            drawingCanvas.setDrawingMode(currentMode);
+            canvasPanel.setDrawingMode(currentMode);
         });
 
         clearButton.addActionListener(e -> {
-            drawingCanvas.clearDrawing();
+            canvasPanel.clearDrawing();
             penButton.setEnabled(true);
             eraserButton.setEnabled(true);
             currentMode = DrawingMode.NONE;
-            drawingCanvas.setDrawingMode(currentMode);
+            canvasPanel.setDrawingMode(currentMode);
             updateUndoButtonState();
         });
 
         undoButton.addActionListener(e -> {
-            drawingCanvas.undoLastStroke();
+            canvasPanel.undoLastStroke();
             updateUndoButtonState();
         });
     }
 
     public static void updateUndoButtonState() {
-        if (undoButton != null && drawingCanvas != null) {
-            undoButton.setEnabled(drawingCanvas.hasStrokes());
+        if (undoButton != null && canvasPanel != null) {
+            undoButton.setEnabled(canvasPanel.hasStrokes());
         }
     }
 }

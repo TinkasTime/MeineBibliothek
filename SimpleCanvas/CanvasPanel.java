@@ -5,8 +5,6 @@ import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +17,6 @@ class CanvasPanel extends JPanel {
     private static final Color BACKGROUND_COLOR = Color.WHITE;
 
     private List<CanvasStroke> drawingStrokes = new ArrayList<>();
-    private CanvasStroke currentStroke = null;
 
     private Point lastPoint = null;
     private DrawingMode currentCanvasMode = DrawingMode.NONE;
@@ -29,51 +26,13 @@ class CanvasPanel extends JPanel {
     public CanvasPanel() {
         setDrawingMode(currentCanvasMode);
 
-        addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                if (currentCanvasMode == DrawingMode.PEN || currentCanvasMode == DrawingMode.ERASER) {
-                    lastPoint = e.getPoint();
-                    currentStroke = new CanvasStroke(currentCanvasMode);
-                    currentStroke.addPoint(lastPoint);
-                    drawingStrokes.add(currentStroke);
-                    repaint();
-                    if (undoButtonCallback != null) {
-                        undoButtonCallback.run();
-                    }
-                }
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                if (currentCanvasMode == DrawingMode.PEN || currentCanvasMode == DrawingMode.ERASER) {
-                    lastPoint = null;
-                    currentStroke = null;
-                }
+        CanvasMouseHandler mouseHandler = new CanvasMouseHandler(this, () -> {
+            if (undoButtonCallback != null) {
+                undoButtonCallback.run();
             }
         });
-
-        addMouseMotionListener(new MouseAdapter() {
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                if ((currentCanvasMode == DrawingMode.PEN || currentCanvasMode == DrawingMode.ERASER) && lastPoint != null && currentStroke != null) {
-                    Point currentPoint = e.getPoint();
-                    currentStroke.addPoint(currentPoint);
-
-                    Graphics g = getGraphics();
-                    if (g != null) {
-                        if (currentCanvasMode == DrawingMode.PEN) {
-                            g.setColor(DRAW_COLOR);
-                        } else {
-                            g.setColor(ERASE_COLOR);
-                        }
-                        g.drawLine(lastPoint.x, lastPoint.y, currentPoint.x, currentPoint.y);
-                        g.dispose();
-                    }
-                    lastPoint = currentPoint;
-                }
-            }
-        });
+        addMouseListener(mouseHandler);
+        addMouseMotionListener(mouseHandler);
     }
 
     public void setUndoButtonCallback (Runnable callback) {
@@ -87,6 +46,14 @@ class CanvasPanel extends JPanel {
         } else {
             setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         }
+    }
+
+    public DrawingMode getCurrentCanvasMode() {
+        return currentCanvasMode;
+    }
+
+    public void addDrawingStroke(CanvasStroke stroke) {
+        this.drawingStrokes.add(stroke);
     }
 
     public void clearDrawing() {
